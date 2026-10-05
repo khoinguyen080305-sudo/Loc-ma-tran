@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MatrixLab — Bộ Lọc Ma Trận Không Gian: Mean, Median, Prewitt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="ambient-bg"></div>
+
+<!-- Header / Hero with Custom Logo -->
+<header class="hero">
+  <div class="wrap hero-content">
+    <div class="brand">
+      <div class="logo-box" aria-hidden="true">
+        <!-- Custom Vector Logo: Matrix Brackets with Scanning Convolution Kernel -->
+        <svg class="logo-svg" viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="50" height="50" rx="14" fill="url(#logo-bg)" stroke="#d7bd88" stroke-width="1.5" stroke-opacity="0.6"/>
+          <!-- Matrix Brackets -->
+          <path d="M12 14H8V40H12" stroke="#d7bd88" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M42 14H46V40H42" stroke="#d7bd88" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- 3x3 Convolution Kernel Grid -->
+          <rect x="17" y="17" width="6" height="6" rx="2" fill="#d7bd88" fill-opacity="0.35"/>
+          <rect x="24" y="17" width="6" height="6" rx="2" fill="#d7bd88" fill-opacity="0.35"/>
+          <rect x="31" y="17" width="6" height="6" rx="2" fill="#d7bd88" fill-opacity="0.35"/>
+          <rect x="17" y="24" width="6" height="6" rx="2" fill="#d7bd88" fill-opacity="0.35"/>
+          <rect x="24" y="24" width="6" height="6" rx="2" fill="#d7bd88" class="logo-center-dot"/>
+          <rect x="31" y="24" width="6" height="6" rx="2" fill="#d7bd88" fill-opacity="0.35"/>
+          <rect x="17" y="31" width="6" height="6" rx="2" fill="#d7bd88" fill-opacity="0.35"/>
+          <rect x="24" y="31" width="6" height="6" rx="2" fill="#d7bd88" fill-opacity="0.35"/>
+          <rect x="31" y="31" width="6" height="6" rx="2" fill="#d7bd88" fill-opacity="0.35"/>
+          <!-- Scan Wave Accent -->
+          <circle cx="27" cy="27" r="10" stroke="#f1e3bd" stroke-width="1" stroke-dasharray="2 3" opacity="0.6" class="logo-pulse"/>
+          <defs>
+            <linearGradient id="logo-bg" x1="0" y1="0" x2="54" y2="54" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#16295c"/>
+              <stop offset="1" stop-color="#0a1531"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="badge-tag">Bộ công cụ xử lý ảnh &amp; tín hiệu</div>
+        <h1>Lọc Ma Trận <span class="accent-gold">Studio</span></h1>
+        <p>Tính toán bộ lọc không gian <strong>Mean</strong>, <strong>Median</strong> và đạo hàm <strong>Prewitt</strong> với minh họa chi tiết từng bước.</p>
+      </div>
+    </div>
+
+    <!-- Theme Switcher -->
+    <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Đổi giao diện Sáng / Tối" title="Đổi giao diện Sáng / Tối">
+      <span class="theme-icon light-icon" aria-hidden="true">☀️</span>
+      <span class="theme-icon dark-icon" aria-hidden="true">🌙</span>
+      <span class="theme-text">Chế độ</span>
+    </button>
+  </div>
+</header>
+
+<main class="wrap main-container">
+  <!-- Card 1: Matrix Input -->
+  <section class="card anim-card" id="card-input">
+    <div class="card-header">
+      <div class="card-title">
+        <span class="n">1</span>
+        <div>
+          <h2>Thiết lập &amp; Nhập ma trận gốc</h2>
+          <span class="card-desc">Cấu hình kích thước và giá trị từng ô ma trận ban đầu</span>
+        </div>
+      </div>
+      <div class="card-status-pill" id="matrix-dim-badge">5 × 5 ô</div>
+    </div>
+
+    <div class="row controls-row">
+      <div class="input-group">
+        <label for="rows"><span class="label-icon">↕</span> Số hàng (Rows: 1 – 10)</label>
+        <div class="step">
+          <button type="button" aria-label="Giảm số hàng">−</button>
+          <input id="rows" type="number" min="1" max="10" value="5">
+          <button type="button" aria-label="Tăng số hàng">+</button>
+        </div>
+      </div>
+      <div class="input-group">
+        <label for="cols"><span class="label-icon">↔</span> Số cột (Cols: 1 – 10)</label>
+        <div class="step">
+          <button type="button" aria-label="Giảm số cột">−</button>
+          <input id="cols" type="number" min="1" max="10" value="5">
+          <button type="button" aria-label="Tăng số cột">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="matrix-stage">
+      <div class="matrix-stage-toolbar">
+        <span class="stage-label">Giá trị ma trận đầu vào M(i, j):</span>
+        <span class="stage-hint">Nhập số trực tiếp vào các ô bên dưới</span>
+      </div>
+      <div class="scroll custom-scrollbar">
+        <div id="mat"></div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="ghost" id="sample" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        Dùng ma trận mẫu
+      </button>
+      <button class="ghost" id="random" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><circle cx="15.5" cy="15.5" r="1.5"/></svg>
+        Ngẫu nhiên
+      </button>
+      <button class="ghost danger-ghost" id="clear" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg>
+        Xóa hết
+      </button>
+    </div>
+  </section>
+
+  <!-- Card 2: Filter Method & Kernel Settings -->
+  <section class="card anim-card" id="card-filter">
+    <div class="card-header">
+      <div class="card-title">
+        <span class="n">2</span>
+        <div>
+          <h2>Chọn thuật toán &amp; Cửa sổ lọc</h2>
+          <span class="card-desc">Lựa chọn giải thuật không gian và kích thước mặt nạ k × k</span>
+        </div>
+      </div>
+    </div>
+
+    <label class="section-sublabel">Phương pháp lọc:</label>
+    <div class="seg" role="group" aria-label="Phương pháp">
+      <button type="button" data-m="mean" aria-pressed="true">
+        <span class="seg-icon">∑</span>
+        <span class="seg-title">Mean (Trung bình)</span>
+        <span class="seg-desc">Làm mịn &amp; giảm nhiễu</span>
+      </button>
+      <button type="button" data-m="median" aria-pressed="false">
+        <span class="seg-icon">≈</span>
+        <span class="seg-title">Median (Trung vị)</span>
+        <span class="seg-desc">Lọc nhiễu muối tiêu</span>
+      </button>
+      <button type="button" data-m="prewitt" aria-pressed="false">
+        <span class="seg-icon">∇</span>
+        <span class="seg-title">Prewitt (Tách biên)</span>
+        <span class="seg-desc">Gradient biên dọc &amp; ngang</span>
+      </button>
+    </div>
+
+    <div class="filter-configs">
+      <div class="input-group window-size-group">
+        <label for="k"><span class="label-icon">⊞</span> Kích thước cửa sổ lọc k × k (1 đến 9)</label>
+        <div class="step" style="max-width:240px">
+          <button type="button" aria-label="Giảm k">−</button>
+          <input id="k" type="number" min="1" max="9" value="3">
+          <button type="button" aria-label="Tăng k">+</button>
+        </div>
+      </div>
+      <div class="hint-card">
+        <span class="hint-icon">💡</span>
+        <p class="hint" id="kn"></p>
+      </div>
+    </div>
+
+    <div id="kers" hidden>
+      <div class="kernel-divider">
+        <span>Cấu hình ma trận Kernel Prewitt</span>
+      </div>
+      <div class="kers-grid-layout">
+        <div class="kernel-block">
+          <div class="kernel-header">
+            <h3>Kernel G<sub>x</sub> (Biên dọc)</h3>
+            <span class="kernel-badge">Đạo hàm theo X</span>
+          </div>
+          <div class="scroll custom-scrollbar"><div id="gx"></div></div>
+        </div>
+        <div class="kernel-block">
+          <div class="kernel-header">
+            <h3>Kernel G<sub>y</sub> (Biên ngang)</h3>
+            <span class="kernel-badge">Đạo hàm theo Y</span>
+          </div>
+          <div class="scroll custom-scrollbar"><div id="gy"></div></div>
+        </div>
+      </div>
+      <div class="actions" style="margin-top:16px;">
+        <button class="ghost" id="rk" type="button">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg>
+          Đặt lại kernel Prewitt mặc định
+        </button>
+      </div>
+      <p class="hint kernel-hint">Mẹo: Có thể sửa trực tiếp từng ô kernel. Tích chập tính bằng nhân vô hướng trực tiếp với cửa sổ lân cận (không lật).</p>
+    </div>
+  </section>
+
+  <!-- Run Action Bar -->
+  <div class="bar">
+    <p id="err" role="alert"></p>
+    <button class="cta" id="run" type="button">
+      <span class="cta-glow"></span>
+      <span class="cta-text">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Tính kết quả lọc
+      </span>
+    </button>
+  </div>
+
+  <!-- Card 3: Output Results -->
+  <section class="card anim-card result-section" id="out" hidden>
+    <div class="card-header">
+      <div class="card-title">
+        <span class="n n-success">✓</span>
+        <div>
+          <h2>Ma trận kết quả</h2>
+          <span class="card-desc">Bấm vào bất kỳ ô nào để xem công thức và cửa sổ tính toán chi tiết</span>
+        </div>
+      </div>
+      <span class="interactive-tag">👆 Chạm vào ô để xem cách tính</span>
+    </div>
+
+    <div id="res" class="results-container"></div>
+
+    <div class="detail-container">
+      <div class="calc" id="detail" hidden></div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer wrap">
+  <p>© Studio Lọc Ma Trận • Thiết kế trực quan &amp; tương tác thời gian thực</p>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
